@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Low Stock{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Low Stock Products</h1></div>
+<p class="muted">Products where quantity is less than or equal to the minimum stock level.</p>
+<div class="card table-card">
+    {% if products %}
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>ID</th><th>Product</th><th>Category</th><th>In Stock</th><th>Minimum</th><th>Shortfall</th><th>Supplier</th><th></th></tr></thead>
+            <tbody>
+            {% for p in products %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.category.name }}</td>
+                    <td><span class="badge badge-danger">{{ p.quantity }}</span></td>
+                    <td>{{ p.minimum_stock }}</td>
+                    <td>{{ [p.minimum_stock - p.quantity, 0]|max }}</td>
+                    <td>{{ p.supplier or '-' }}</td>
+                    <td><a href="{{ url_for('stock.stock_in', product=p.id) }}">Restock</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty">Great news - no products are low on stock.</p>
+    {% endif %}
+</div>
+{% endblock %}

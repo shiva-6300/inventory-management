@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Stock History{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Stock History</h1>
+    <a class="btn btn-outline" href="{{ url_for('reports.export_history', type=filters.type, product=filters.product, date_from=filters.date_from, date_to=filters.date_to) }}">Download CSV</a>
+</div>
+
+<form method="get" class="filter-bar" action="{{ url_for('stock.stock_history') }}">
+    <select name="type">
+        <option value="">All types</option>
+        {% for t in types %}<option value="{{ t }}" {% if filters.type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+    </select>
+    <select name="product">
+        <option value="">All products</option>
+        {% for p in products %}<option value="{{ p.id }}" {% if filters.product == p.id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
+    </select>
+    <label for="date_from">From</label>
+    <input type="date" id="date_from" name="date_from" value="{{ filters.date_from }}">
+    <label for="date_to">To</label>
+    <input type="date" id="date_to" name="date_to" value="{{ filters.date_to }}">
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('stock.stock_history') }}">Reset</a>
+</form>
+
+<div class="card table-card">
+    {% if transactions %}
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Date</th><th>Product</th><th>Type</th><th>Qty</th><th>Supplier / Customer</th><th>Price</th><th>User</th><th>Notes</th></tr></thead>
+            <tbody>
+            {% for t in transactions %}
+                <tr>
+                    <td>{{ t.transaction_date|fmt_date }}</td>
+                    <td>{{ t.product.name }}</td>
+                    <td><span class="badge {{ 'badge-success' if t.transaction_type == 'STOCK IN' else 'badge-warning' }}">{{ t.transaction_type }}</span></td>
+                    <td>{{ t.quantity }}</td>
+                    <td>{{ t.supplier_customer }}</td>
+                    <td>{{ t.unit_price|money if t.unit_price is not none else '-' }}</td>
+                    <td>{{ t.user.name }}</td>
+                    <td class="wrap">{{ t.notes or '-' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty">No transactions match the selected filters.</p>
+    {% endif %}
+</div>
+{% endblock %}

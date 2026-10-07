@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} | Inventory System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% if current_user %}with-sidebar{% endif %}">
+{% if current_user %}
+<aside class="sidebar">
+    <a class="brand" href="{{ url_for('dashboard.dashboard') }}">Stock<span>Keeper</span></a>
+    <nav class="side-nav">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="{% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('products.list_products') }}" class="{% if request.endpoint and request.endpoint.startswith('products.') %}active{% endif %}">Products</a>
+        <a href="{{ url_for('categories.list_categories') }}" class="{% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}">Categories</a>
+        <a href="{{ url_for('stock.stock_in') }}" class="{% if request.endpoint == 'stock.stock_in' %}active{% endif %}">Stock In</a>
+        <a href="{{ url_for('stock.stock_out') }}" class="{% if request.endpoint == 'stock.stock_out' %}active{% endif %}">Stock Out</a>
+        <a href="{{ url_for('stock.stock_history') }}" class="{% if request.endpoint == 'stock.stock_history' %}active{% endif %}">Stock History</a>
+        <a href="{{ url_for('stock.low_stock') }}" class="{% if request.endpoint == 'stock.low_stock' %}active{% endif %}">Low Stock</a>
+        <a href="{{ url_for('reports.reports') }}" class="{% if request.endpoint == 'reports.reports' %}active{% endif %}">Reports</a>
+    </nav>
+    <div class="side-user">
+        <div class="user-name">{{ current_user.name }}</div>
+        <div class="user-role">{{ current_user.role|capitalize }}</div>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="btn btn-outline btn-sm btn-block">Logout</button>
+        </form>
+    </div>
+</aside>
+{% endif %}
+
+<main class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-area">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

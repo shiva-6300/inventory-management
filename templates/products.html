@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Products</h1>
+    {% if current_user.role == 'admin' %}
+    <a class="btn btn-primary" href="{{ url_for('products.add_product') }}">+ Add Product</a>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar" action="{{ url_for('products.list_products') }}">
+    <input type="text" name="q" value="{{ search }}" placeholder="Search by product name" maxlength="100">
+    <select name="category">
+        <option value="">All categories</option>
+        {% for c in categories %}
+        <option value="{{ c.id }}" {% if selected_category == c.id %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('products.list_products') }}">Reset</a>
+</form>
+
+<div class="card table-card">
+    {% if products %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Quantity</th><th>Min Stock</th><th>Supplier</th><th>Created</th>{% if current_user.role == 'admin' %}<th>Actions</th>{% endif %}</tr>
+            </thead>
+            <tbody>
+            {% for p in products %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.category.name }}</td>
+                    <td>{{ p.price|money }}</td>
+                    <td>
+                        {% if p.is_low_stock %}<span class="badge badge-danger">{{ p.quantity }} &middot; Low</span>
+                        {% else %}<span class="badge badge-success">{{ p.quantity }}</span>{% endif %}
+                    </td>
+                    <td>{{ p.minimum_stock }}</td>
+                    <td>{{ p.supplier or '-' }}</td>
+                    <td>{{ p.created_at|fmt_date }}</td>
+                    {% if current_user.role == 'admin' %}
+                    <td class="actions">
+                        <a class="btn btn-outline btn-sm" href="{{ url_for('products.edit_product', product_id=p.id) }}">Edit</a>
+                        <form method="post" action="{{ url_for('products.delete_product', product_id=p.id) }}" onsubmit="return confirm('Delete this product?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty">No products found.</p>
+    {% endif %}
+</div>
+{% endblock %}

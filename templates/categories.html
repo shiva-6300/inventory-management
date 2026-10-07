@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Categories</h1></div>
+
+{% if current_user.role == 'admin' %}
+<div class="card form-card">
+    <h2 class="section-title first">{% if edit_category %}Edit Category{% else %}Add Category{% endif %}</h2>
+    <form method="post"
+          action="{% if edit_category %}{{ url_for('categories.edit_category', category_id=edit_category.id) }}{% else %}{{ url_for('categories.add_category') }}{% endif %}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="{{ form.name }}" maxlength="100" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description" value="{{ form.description }}" maxlength="255">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">{% if edit_category %}Update{% else %}Add{% endif %} Category</button>
+        {% if edit_category %}<a class="btn btn-outline" href="{{ url_for('categories.list_categories') }}">Cancel</a>{% endif %}
+    </form>
+</div>
+{% endif %}
+
+<div class="card table-card spaced">
+    {% if categories %}
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Products</th>{% if current_user.role == 'admin' %}<th>Actions</th>{% endif %}</tr></thead>
+            <tbody>
+            {% for c in categories %}
+                <tr>
+                    <td>{{ c.id }}</td>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.description or '-' }}</td>
+                    <td>{{ c.products|length }}</td>
+                    {% if current_user.role == 'admin' %}
+                    <td class="actions">
+                        <a class="btn btn-outline btn-sm" href="{{ url_for('categories.edit_category', category_id=c.id) }}">Edit</a>
+                        <form method="post" action="{{ url_for('categories.delete_category', category_id=c.id) }}" onsubmit="return confirm('Delete this category?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty">No categories yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Stock In{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Stock In</h1></div>
+<div class="card form-card">
+    <form method="post" action="{{ url_for('stock.stock_in') }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="form-group">
+            <label for="product_id">Product</label>
+            <select id="product_id" name="product_id" required>
+                <option value="">-- Select product --</option>
+                {% for p in products %}
+                <option value="{{ p.id }}" {% if form.product_id|string == p.id|string %}selected{% endif %}>{{ p.name }} (in stock: {{ p.quantity }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-row form-row-3">
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" value="{{ form.quantity }}" min="1" step="1" required>
+            </div>
+            <div class="form-group">
+                <label for="purchase_price">Purchase Price (per unit)</label>
+                <input type="number" id="purchase_price" name="purchase_price" value="{{ form.purchase_price }}" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" value="{{ form.date }}" max="{{ today }}" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="party">Supplier</label>
+            <input type="text" id="party" name="party" value="{{ form.party }}" maxlength="150" required>
+        </div>
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="3" maxlength="500">{{ form.notes }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Record Stock In</button>
+    </form>
+</div>
+{% endblock %}

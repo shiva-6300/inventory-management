@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Reports</h1>
+    <a class="btn btn-outline" href="{{ url_for('reports.export_history') }}">Download Stock History (CSV)</a>
+</div>
+
+<div class="grid grid-3">
+    <div class="card stat-card"><div class="stat-label">Total Products</div><div class="stat-value">{{ report.total_products }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Total Inventory Quantity</div><div class="stat-value">{{ '{:,}'.format(report.total_quantity) }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Inventory Value</div><div class="stat-value">{{ report.inventory_value|money }}</div></div>
+</div>
+
+<div class="grid grid-2">
+    <div>
+        <h2 class="section-title">Stock-In Summary</h2>
+        <div class="card">
+            <p><strong>{{ report.stock_in.transactions }}</strong> transactions &middot; <strong>{{ report.stock_in.units }}</strong> units &middot; purchase value <strong>{{ report.stock_in.value|money }}</strong></p>
+            {% if report.stock_in.top_products %}
+            <table class="mini"><thead><tr><th>Top products received</th><th>Units</th></tr></thead><tbody>
+                {% for row in report.stock_in.top_products %}<tr><td>{{ row.product }}</td><td>{{ row.quantity }}</td></tr>{% endfor %}
+            </tbody></table>
+            {% else %}<p class="muted">No stock-in recorded.</p>{% endif %}
+        </div>
+    </div>
+    <div>
+        <h2 class="section-title">Stock-Out Summary</h2>
+        <div class="card">
+            <p><strong>{{ report.stock_out.transactions }}</strong> transactions &middot; <strong>{{ report.stock_out.units }}</strong> units issued</p>
+            {% if report.stock_out.top_products %}
+            <table class="mini"><thead><tr><th>Top products issued</th><th>Units</th></tr></thead><tbody>
+                {% for row in report.stock_out.top_products %}<tr><td>{{ row.product }}</td><td>{{ row.quantity }}</td></tr>{% endfor %}
+            </tbody></table>
+            {% else %}<p class="muted">No stock-out recorded.</p>{% endif %}
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title">Stock by Category</h2>
+<div class="card table-card">
+    <div class="table-wrap"><table>
+        <thead><tr><th>Category</th><th>Products</th><th>Quantity</th><th>Value</th></tr></thead>
+        <tbody>
+        {% for row in report.by_category %}
+            <tr><td>{{ row.category }}</td><td>{{ row.products }}</td><td>{{ row.quantity }}</td><td>{{ row.value|money }}</td></tr>
+        {% else %}
+            <tr><td colspan="4" class="empty">No data.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</div>
+
+<h2 class="section-title">Monthly Movement</h2>
+<div class="card table-card">
+    <div class="table-wrap"><table>
+        <thead><tr><th>Month</th><th>Stock In (units)</th><th>Stock Out (units)</th></tr></thead>
+        <tbody>
+        {% for row in report.monthly %}
+            <tr><td>{{ row.month }}</td><td>{{ row.stock_in }}</td><td>{{ row.stock_out }}</td></tr>
+        {% else %}
+            <tr><td colspan="3" class="empty">No transactions yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</div>
+
+<h2 class="section-title">Low-Stock Products</h2>
+<div class="card table-card">
+    {% if report.low_stock %}
+    <div class="table-wrap"><table>
+        <thead><tr><th>Product</th><th>Category</th><th>Quantity</th></tr></thead>
+        <tbody>
+        {% for row in report.low_stock %}
+            <tr><td>{{ row.name }}</td><td>{{ row.category }}</td><td><span class="badge badge-danger">{{ row.quantity }}</span></td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    {% else %}<p class="empty">No low-stock products.</p>{% endif %}
+</div>
+{% endblock %}
